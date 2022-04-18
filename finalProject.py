@@ -3,6 +3,8 @@ import requests
 import json
 import jwt
 import os
+import matplotlib.pyplot as plt
+import numpy as np
 from datetime import datetime, timedelta
 url = "https://api.music.apple.com/v1/catalog/US/charts"
 key_id = "688Z3NH7KW"
@@ -57,12 +59,41 @@ print(response.json())
 
 con = sqlite3.connect("music.db")
 cur = con.cursor()
-cur.execute('''CREATE TABLE apple_music_songs 
-               (id INT PRIMARY KEY, rank INT, song TEXT, artist_id INT);''')
-cur.execute('''CREATE TABLE apple_music_artists
-               (id INT PRIMARY KEY, name TEXT);''')
+cur.execute('''CREATE TABLE IF NOT EXISTS apple_music_songs 
+               (id INTEGER PRIMARY KEY, rank INT, song TEXT, artist_id INT);''')
+cur.execute('''CREATE TABLE IF NOT EXISTS apple_music_artists
+               (id INTEGER PRIMARY KEY, name TEXT UNIQUE);''')
+songs_saved = 0 
 for i in range(max_songs):
     song_name = response.json()["results"]["songs"][0]["data"][i]["attributes"]["name"]
-    artist_name = response.json()["results"]["songs"][0]["data"][i]["attributes"]["artistName"]
-    cur.execute("INSERT OR IGNORE INTO apple_music_artists (name) VALUES (?)", artist_name)
-    
+    artist_name = response.json()["results"]["songs"][0]["data"][i]["attributes"]["artistName"] 
+    cur.execute("INSERT OR IGNORE INTO apple_music_artists (name) VALUES (?);", (artist_name,))
+    cur.execute("SELECT id FROM apple_music_artists WHERE name = ?;", (artist_name,))
+    artist_id = cur.fetchone()[0]
+    cur.execute("SELECT * FROM apple_music_songs WHERE song = ?;", (song_name,))
+    if not cur.fetchone():
+        cur.execute("INSERT INTO apple_music_songs (rank, song, artist_id) VALUES (?, ?, ?);", (i+1, song_name, artist_id))
+        songs_saved += 1
+    if songs_saved >= 25:
+        break
+
+cur.execute("SELECT name, COUNT(apple_music_songs.id) AS songs_in_apple_top100 FROM apple_music_artists JOIN apple_music_songs ON artist_id = apple_music_artists.id GROUP BY apple_music_artists.id ORDER BY songs_in_apple_top100 ASC;")
+apple_top_artists = cur.fetchall()
+
+con.commit()
+con.close()
+
+results = dict(apple_top_artists)
+
+objects = results.keys()
+y_pos = np.arange(len(objects))
+performance = results.values()
+plt.rc("ytick", labelsize = 6)
+plt.barh(y_pos, performance, align='center', color = "red")
+plt.yticks(y_pos, objects)
+plt.xticks(np.arange(21))
+plt.xlabel("Number of Songs in Apple's Top 100")
+plt.ylabel('Artists')
+plt.title("Top Artists on Apple Music's Chart")
+
+plt.show()
