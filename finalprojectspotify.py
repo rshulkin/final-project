@@ -8,6 +8,8 @@ import csv
 import sqlite3
 import json
 import unittest
+import matplotlib.pyplot as plt
+import numpy as np
 
 #this function retrieves data from the html file and stores 
 #into lists
@@ -55,5 +57,23 @@ for i in range(len(song_list)):
         songs_saved += 1
     if songs_saved >= 25:
         break
+
+cur.execute("SELECT name, COUNT(spotify_songs.artist_id) AS songs_in_spotify_top100 FROM spotify_artists JOIN spotify_songs ON artist_id = spotify_artists.id GROUP BY spotify_artists.id ORDER BY songs_in_spotify_top100 ASC;")
+spotify_top_artists = cur.fetchall()
 conn.commit()
 conn.close()
+
+results = dict(spotify_top_artists)
+
+objects = results.keys()
+y_pos = np.arange(len(objects))
+performance = results.values()
+plt.rc("ytick", labelsize = 6)
+plt.barh(y_pos, performance, align='center', color = "red")
+plt.yticks(y_pos, objects)
+plt.xticks(np.arange(5))
+plt.xlabel("Number of Songs in Spotify's Top 100 Songs of All Time")
+plt.ylabel('Artists')
+plt.title("Spotify Top Artists")
+
+plt.show()

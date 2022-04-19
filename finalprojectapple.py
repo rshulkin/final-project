@@ -77,23 +77,3 @@ for i in range(max_songs):
     if songs_saved >= 25:
         break
 
-cur.execute("SELECT name, COUNT(apple_music_songs.id) AS songs_in_apple_top100 FROM apple_music_artists JOIN apple_music_songs ON artist_id = apple_music_artists.id GROUP BY apple_music_artists.id ORDER BY songs_in_apple_top100 ASC;")
-apple_top_artists = cur.fetchall()
-
-con.commit()
-con.close()
-
-results = dict(apple_top_artists)
-
-objects = results.keys()
-y_pos = np.arange(len(objects))
-performance = results.values()
-plt.rc("ytick", labelsize = 6)
-plt.barh(y_pos, performance, align='center', color = "red")
-plt.yticks(y_pos, objects)
-plt.xticks(np.arange(21))
-plt.xlabel("Number of Songs in Apple's Top 100")
-plt.ylabel('Artists')
-plt.title("Top Artists on Apple Music's Chart")
-
-plt.show()
