@@ -19,7 +19,7 @@ soup = BeautifulSoup(r.text, "html.parser")
 # full_path = os.path.join(source_dir, "Most-streamed.html")
 
 path = os.path.dirname(os.path.abspath(__file__))
-conn = sqlite3.connect(path+'/'+'spotify_songs.db')
+conn = sqlite3.connect('music.db')
 cur = conn.cursor()
 
 header = []
@@ -57,8 +57,3 @@ for i in range(len(song_list)):
         break
 conn.commit()
 conn.close()
-
-
-
-
-
