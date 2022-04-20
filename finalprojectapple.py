@@ -15,9 +15,7 @@ token_valid_until = None
 
 def generate_token(session_length=12):
     """
-    Generate encrypted token to be used by in API requests.
-    Set the class token parameter.
-    :param session_length: Length Apple Music token is valid, in hours
+    Takes the length of time for the token to be valid for (in hours) as the input and uses this encrypted token to assist with the successful api request.
     """
     global token_str, token_valid_until
     token_exp_time = datetime.now() + timedelta(hours=session_length)
