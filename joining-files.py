@@ -24,7 +24,6 @@ cur.execute(
 )
 res = cur.fetchall()
 
-
 cur.execute(
     '''
     CREATE TABLE IF NOT EXISTS mutual_artists 
@@ -32,14 +31,6 @@ cur.execute(
     '''
     )
 result_list = [x[0] for x in res]
-# for i in range(len(result_list)):
-#     cur.execute(
-#     '''
-#     INSERT OR IGNORE INTO mutual_artists (name) VALUES (?);
-    
-#     ''',
-#     (result_list[i],)
-# )
 
 for i in range(len(result_list)):
     cur.execute("INSERT OR IGNORE INTO mutual_artists (name) VALUES (?)",(result_list[i],))
@@ -67,6 +58,7 @@ plt.yticks(y_pos, objects)
 plt.xticks(np.arange(5))
 plt.xlabel("Number of Songs in Spotify's Top 100 Songs of All Time")
 plt.ylabel('Artists')
+plt.tick_params(axis='y', labelsize=3)
 plt.title("Spotify Top Artists")
 
 plt.show()
@@ -83,6 +75,7 @@ plt.yticks(y_pos, objects)
 plt.xticks(np.arange(21))
 plt.xlabel("Number of Songs in Apple's Top 100")
 plt.ylabel('Artists')
+plt.tick_params(axis='y', labelsize=3)
 plt.title("Top Artists on Apple Music's Chart")
 
 plt.show()
@@ -98,23 +91,40 @@ dict_s = dict(mutual_songs_s)
 
 # Define Data
 
-x_axis = np.arange(len(dict_m.keys()))
+# x_axis = np.arange(len(dict_m.keys()))
 # apple = dict_m.keys()
 # spotify = dict_s.keys()
 
 # Multi bar Chart
 
-plt.bar(x_axis -0.2, dict_m.values(), width=0.4, label = 'Apple Music')
-plt.bar(x_axis +0.2, dict_s.values(), width=0.4, label = 'Spotify')
+# plt.bar(x_axis -0.2, dict_m.values(), width=0.4, label = 'Apple Music')
+# plt.bar(x_axis +0.2, dict_s.values(), width=0.4, label = 'Spotify')
 
 
-plt.xticks(x_axis, dict_m.keys())
-plt.tick_params(axis='x', labelsize=5)
-plt.title("Artists in the Spotify overall Charts and Current Apple Charts")
-plt.xlabel("Artist Name")
-plt.ylabel("Number of Songs in Respective Top 100 Chart")
-plt.legend()
+# plt.xticks(x_axis, dict_m.keys())
+# plt.tick_params(axis='x', labelsize=5)
+# plt.title("Artists in the Spotify overall Charts and Current Apple Charts")
+# plt.xlabel("Artist Name")
+# plt.ylabel("Number of Songs in Respective Top 100 Chart")
+# plt.legend()
+# plt.show()
+
+# visualization for top artists x streams on spotify
+cur.execute("SELECT mutual_artists.name, spotify_artists.streams FROM spotify_artists JOIN mutual_artists ON mutual_artists.name = spotify_artists.name;")
+top_artists_streams = cur.fetchall()
+
+dict_t = dict(top_artists_streams)
+dict_top = dict(sorted(dict_t.items(), key = lambda x: x[1]))
+
+names = list(dict_top.keys())
+values = list(dict_top.values())
+plt.ylabel('Artists')
+plt.xlabel('Number of Streams on Top Streaming Song')
+plt.bar(range(len(dict_top)), values, tick_label=names)
+plt.tick_params(axis='x', labelsize=6)
+plt.title("Top Artists Currently and Overall: Their Top Streamed Song")
 plt.show()
+
 
 #average songs artists have in the top overall charts, if they have songs in both 
 # current top 100 (apple) and overall top 100 (spotify)
